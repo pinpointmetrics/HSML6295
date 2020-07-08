@@ -1,0 +1,538 @@
+---
+title: "Example R Markdown Notebook"
+output:
+  html_document:
+    df_print: paged
+jupyter:
+  kernelspec:
+    display_name: R
+    language: R
+    name: ir
+  language_info:
+    codemirror_mode: r
+    file_extension: .r
+    mimetype: text/x-r-source
+    name: R
+    pygments_lexer: r
+    version: 3.4.3
+---
+
+#### Keyboard Shortcuts
+
+| Keyboard Combination | Command |
+| --- |---|
+| `option`+`shift`+K   | Show List of Keyboard Shortcuts
+| `command`+`enter`    | Run Selected Line(s) |
+| `command`+`option`+P | Run All Chunks Above |
+| `command`+`shift`+S  | Source Active File |
+| `command`+`shift`+K  | Knit Document / Compile PDF |
+
+#### I. Creating a Data Set
+
+Create a sample data set by 
+
+1. reading in a list of ages for 12 individuals
+```{r}
+mydata = data.frame(Age = c(21, 32, 37, 43, 47, 51, 55, 61, 64, 66, 68, 72))
+```
+
+2. and adding their names.
+```{r}
+attr(mydata, "row.names") = c(" 1 Amy"," 2 Ben"," 3 Carl"," 4 Dan"," 5 Ed", 
+                              " 6 Fran", " 7 George", " 8 Helen", " 9 Iris", 
+                              "10 Jen", "11 Kim", "12 Luke")
+```
+
+Show the data set that we just created:
+```{r}
+mydata
+```
+
+**> Knowledge Check 1.**
+What is Carl's age in this data set?
+
+*Answer:*
+
+Carl's age is `r mydata$Age[3]` years.
+
+**> Knowledge Check 2.**
+Change Amy's age from 21 to 22 in the above code.
+
+*Answer:*
+```{r}
+mydata = data.frame(Age = c(22, 32, 37, 43, 47, 51, 55, 61, 64, 66, 68, 72))
+```
+
+**> Knowledge Check 3.**
+Change the name of the 12th individual from Luke to Lucy.
+
+*Answer:*
+```{r}
+attr(mydata, "row.names") = c(" 1 Amy"," 2 Ben"," 3 Carl"," 4 Dan",
+                              " 5 Ed", " 6 Fran", " 7 George", " 8 Helen", 
+                              " 9 Iris", "10 Jen", "11 Kim", "12 Lucy")
+```
+
+The `attach` command tells R that all the variables referred to below are found in the data set `mydata` that we just created:
+```{r}
+attach(mydata)
+```
+
+#### II. Summary Statistics 1: Location Measures
+
+**> Knowledge Check 4.**
+Consider the 12 values of `Age` in this data set and determine the minimum, mean, median, and maximum values of `Age`.
+
+*Answer:*
+
+The minimum, mean, median, and maximum values of `Age` are `r min(Age)`, `r mean(Age)`, `r median(Age)`, and `r max(Age)` years, respectively.
+
+The `summary` command shows the minimum, first quartile, mean, median, third quartile, and maximum of one or more variables:
+
+```{r}
+summary(Age)
+```
+
+We can also represent these numbers graphically in a box plot:
+```{r}
+boxplot(Age)
+```
+
+#### III. Summary Statistics 2: Dispersion Measures
+
+**> Knowledge Check 5.**
+Compute the variance of `Age` if its mean is `r round(mean(Age),1)`.
+
+Recall that the variance is computed as
+$$\frac{1}{n-1}\sum_{i=1}^n (x_i - \bar{x})^2$$
+where $x_i$ is the $i$th value of the variable, $\bar{x}$ is its mean, and $n$ is the number of observations in the data set.
+
+*Answer:*
+
+The variance of `Age` is `r round(var(Age), 1)` years squared.
+```{r, eval=FALSE}
+var(Age)
+```
+
+**> Knowledge Check 6.**
+Compute the standard deviation of `Age` if its variance is `r round(var(Age), 1)`.
+
+*Answer:*
+
+The standard deviation of `Age` is the square root of its variance, `r round(sd(Age), 1)` years.
+```{r, eval=FALSE}
+sd(Age)
+```
+
+#### IV. Plotting the Entire Distribution
+
+We can estimate the entire distribution with a histogram:
+
+```{r}
+hist(Age, cex.main=0.97)
+```
+
+**> Knowledge Check 7.**
+How many individuals in this data set are between 60 and 70 years old?
+
+*Answer:*
+
+`r length(mydata$Age[mydata$Age >= 60 & mydata$Age < 70])` individuals in this data set are between 60 and 70 years old.
+
+We can also estimate the density function:
+
+```{r}
+d = density(Age) # estimate density function
+plot(d, main="Density Function Estimate of Age", xlab = "Age", 
+     cex.main=0.97) # plot density function
+lines(d, type='l', col='red') # color the density function red
+```
+
+#### V. Adding Another Variable
+
+Now let's add another variable, `Cost`, which measures annual health care cost for each individual:
+
+```{r}
+set.seed(8)
+Cost = 100*Age + Age^2 + round(rnorm(length(Age), mean = 0, sd = 4000))
+```
+
+Note that because the third term is a vector of random numbers, we are using the `set.seed` command to obtain the same `Cost` values every time we run this code.
+
+**> Knowledge Check 8.**
+Change the value of the seed from 8 to 4 and recompute the values of `Cost`.
+
+*Answer:*
+```{r}
+set.seed(4)
+Cost = 100*Age + Age^2 + round(rnorm(length(Age), mean = 0, sd = 4000))
+```
+
+To ensure that `Cost` is never negative, we set all negative values to zero:
+```{r}
+Cost[Cost < 0] = 0
+```
+
+We add this new variable to our existing data set
+```{r}
+mydata = data.frame(Age, Cost)
+```
+
+and re-apply the row names.
+```{r}
+attr(mydata, "row.names") = c("Amy","Ben","Carl","Dan","Ed", "Fran", 
+                              "George", "Helen", "Iris", "Jen", "Kim", "Lucy")
+```
+
+Our data set now looks like this:
+```{r}
+mydata
+```
+
+**> Knowledge Check 9.**
+Determine the following:
+
+1. Jen's annual health care cost
+
+*Answer:*
+
+Jen's annual health care cost is $`r format(round(Cost[10]), big.mark=",")`.
+
+2. The mean annual health care cost
+
+*Answer:*
+
+Mean annual health care cost is $`r format(round(mean(Cost)), big.mark=",")`.
+
+3. The median annual health care cost
+
+*Answer:*
+
+Median annual health care cost is $`r format(round(median(Cost)), big.mark=",")`.
+
+4. The standard deviation of annual health care cost
+
+*Answer:*
+
+The standard deviation of annual health care cost is $`r format(round(sd(Cost)), big.mark=",")`.
+
+As we did for `Age`, we can also plot the histogram and density function estimate of `Cost`:
+
+```{r, echo=FALSE}
+hist(Cost, cex.main=0.97)
+```
+
+```{r, echo=FALSE}
+d = density(Cost) # estimate density function
+plot(d, main="Density Function Estimate of Cost", 
+     xlab = "Cost", cex.main=0.97)  # plot density function
+lines(d, type='l', col='darkblue')  # color the density function dark blue
+```
+
+#### VI. Scatter Plot
+
+We can show both variables, `Age` and `Cost`, in a single graph, called a "scatter plot":
+```{r}
+plot(Age, Cost)
+with(mydata, text(Cost ~ Age, labels = row.names(mydata), pos = 1))
+```
+
+**> Knowledge Check 10.**
+On average, does cost increase, decrease, or remain the same as age increases?
+
+*Answer:*
+
+On average, cost increases as age increases.
+
+**> Knowledge Check 11.**
+Is Helen's annual health care cost in the bottom or top half of the cost values of the 12 individuals in this data set? What about Ed's cost?
+
+*Answer:*
+
+Helen's annual health care cost is in the bottom half of the cost values of the 12 individuals, although her age puts her in the older half of the sample. Conversely, Ed's cost places him in the more expensive half of the distribution, although his age places him in the younger half of the sample.
+
+#### VII. Using Age to Predict Cost
+
+We can now fit a straight line to the data.
+
+```{r, echo=FALSE}
+reg1 = lm(Cost ~ Age, data=subset(mydata, Age < 70))
+Pred = predict(reg1, mydata)
+plot(Age, Cost)
+with(mydata, text(Cost ~ Age, labels = row.names(mydata), pos = 1))
+lines(Age, Pred, type='l', col='blue')
+```
+
+Here we fitted a straight line only to the 11 data points representing the Amy through Kim, who are all younger than 70.
+The straight line extends to Lucy, however, who is 72.
+
+**> Knowledge Check 12.**
+Is the __observed value__ of `Cost` for Lucy larger or smaller than the __predicted value__ of `Cost` for Lucy?
+
+*Answer:*
+
+The observed value is \$`r format(round((Cost[12])), big.mark=",")` and the predicted value is \$`r format(round((Pred[12])), big.mark=",")`.
+Thus the cost observed for Lucy is \$`r format(abs(round(Cost[12]) - round(Pred[12])), big.mark=",")` smaller than the predicted cost.
+
+A straight line doesn't give us a lot of flexibility to track the data in our sample. We can allow successively more flexible functional forms to track the data, as shown here:
+
+```{r, echo=FALSE}
+# Model 1
+  reg = lm(Cost ~ poly(Age, 1), data=subset(mydata, Age < 70))
+  Pred = predict(reg, mydata)
+  plot(Age, Cost, main = paste("Model", 1), cex.main=0.97)
+  with(mydata, text(Cost ~ Age, labels = row.names(mydata), pos = 1))
+  lines(Age, Pred, type='l', col='blue')
+```
+
+```{r, echo=FALSE}
+# Model 2
+  reg = lm(Cost ~ poly(Age, 2), data=subset(mydata, Age < 70))
+  Pred = predict(reg, mydata)
+  plot(Age, Cost, main = paste("Model", 2), cex.main=0.97)
+  with(mydata, text(Cost ~ Age, labels = row.names(mydata), pos = 1))
+  lines(Age, Pred, type='l', col='red')
+```
+
+```{r, echo=FALSE}
+# Model 3
+  reg = lm(Cost ~ poly(Age, 4), data=subset(mydata, Age < 70))
+  Pred = predict(reg, mydata)
+  plot(Age, Cost, main = paste("Model", 3), cex.main=0.97)
+  with(mydata, text(Cost ~ Age, labels = row.names(mydata), pos = 1))
+  lines(Age, Pred, type='l', col='coral')
+```
+
+```{r, echo=FALSE}
+# Model 4
+  reg = lm(Cost ~ poly(Age, 8), data=subset(mydata, Age < 70))
+  Pred = predict(reg, mydata)
+  plot(Age, Cost, main = paste("Model", 4), cex.main=0.97)
+  with(mydata, text(Cost ~ Age, labels = row.names(mydata), pos = 1))
+  lines(Age, Pred, type='l', col='dark green')
+```
+
+**> Knowledge Check 13.**
+Which model approximates the observed values of the response (`Cost`) in the __training data__ (the 11 `Age`-`Cost` pairs representing Amy through Kim) most closely?
+
+*Answer:*
+
+Model 4 approximates the observed values of the response (`Cost`) in the training data (the 11 `Age`-`Cost` pairs representing Amy through Kim) most closely?
+
+**> Knowledge Check 14.**
+Which model approximates the observed value of the response (`Cost`) in the __test data__ (the `Age`-`Cost` pair representing Lucy) most closely?
+
+*Answer:*
+
+Model 1 approximates the observed value of the response (`Cost`) in the test data (the `Age`-`Cost` pair representing Lucy) most closely.
+
+**> Knowledge Check 15.**
+Change the complexity parameter in Model 4 in 
+```{r, eval=FALSE}
+  reg = lm(Cost ~ poly(Age, 8), data=subset(mydata, Age < 70))
+```
+from 8 to 6 and rename it from "Model 4" to "Model 5" in 
+```{r, eval=FALSE}
+  plot(Age, Cost, main = paste("Model", 4), cex.main=0.97)
+```
+
+
+*Answer:*
+
+```{r}
+  reg = lm(Cost ~ poly(Age, 6), data=subset(mydata, Age < 70))
+  Pred = predict(reg, mydata)
+  plot(Age, Cost, main = paste("Model", 5), cex.main=0.97)
+  with(mydata, text(Cost ~ Age, labels = row.names(mydata), pos = 1))
+  lines(Age, Pred, type='l', col='dark green')
+```
+
+
+#### VIII. Model Tuning
+
+Two aggregate measures how closely a model's predicted values $\hat{y}_i$ approximate the observed values $y_i$:
+
+* The __Mean Absolute Error__ (MAE):
+$$\frac{1}{n}\sum_{i=1}^n |y_i - \hat{y}_i|$$
+
+```{r, echo=FALSE}
+# Function that returns Mean Absolute Error (MAE)
+mae = function(error){mean(abs(error))}
+```
+
+* The __Root Mean Squared Error__ (RMSE)
+$$\sqrt{\frac{1}{n}\sum_{i=1}^n (y_i - \hat{y}_i)^2}$$
+
+```{r, echo=FALSE}
+# Function that returns Root Mean Squared Error (RMSE)
+rmse = function(error){sqrt(mean(error^2))}
+```
+
+In the following 4 figures I have added two measures of the __training error__, namely the values of the RMSE and MAE for the training data.
+I've also added the __test error__, defined as the absolute value of the difference between the observed and the predicted cost for Lucy.
+
+```{r, echo=FALSE}
+  reg = lm(Cost ~ poly(Age, 1), data=subset(mydata, Age < 70))
+  Pred = predict(reg, mydata)
+  RMSE = format(round(rmse(reg$residuals)), big.mark=",")
+  MAE  = format(round(mae(reg$residuals)), big.mark=",")
+  test_error = format(round(abs(Cost[12] - Pred[12])), big.mark=",")
+  plot(Age, Cost, main = paste("Model", 1, "\nTraining Error:   RMSE ", 
+                               RMSE, "  MAE ", MAE, "\n Test Error: ", test_error), 
+       cex.main=0.97)
+  with(mydata, text(Cost ~ Age, labels = row.names(mydata), pos = 1))
+  lines(Age, Pred, type='l', col='blue')
+```
+
+```{r, echo=FALSE}
+  reg = lm(Cost ~ poly(Age, 2), data=subset(mydata, Age < 70))
+  Pred = predict(reg, mydata)
+  RMSE = format(round(rmse(reg$residuals)), big.mark=",")
+  MAE  = format(round(mae(reg$residuals)), big.mark=",")
+  test_error = format(round(abs(Cost[12] - Pred[12])), big.mark=",")
+  plot(Age, Cost, main = paste("Model", 2, "\nTraining Error:   RMSE ", 
+                               RMSE, "  MAE ", MAE, "\n Test Error: ", test_error), 
+       cex.main=0.97)
+  with(mydata, text(Cost ~ Age, labels = row.names(mydata), pos = 1))
+  lines(Age, Pred, type='l', col='red')
+```
+
+```{r, echo=FALSE}
+  reg = lm(Cost ~ poly(Age, 4), data=subset(mydata, Age < 70))
+  Pred = predict(reg, mydata)
+  RMSE = format(round(rmse(reg$residuals)), big.mark=",")
+  MAE  = format(round(mae(reg$residuals)), big.mark=",")
+  test_error = format(round(abs(Cost[12] - Pred[12])), big.mark=",")
+  plot(Age, Cost, main = paste("Model", 3, "\nTraining Error:   RMSE ", 
+                               RMSE, "  MAE ", MAE, "\n Test Error: ", test_error), 
+       cex.main=0.97)
+  with(mydata, text(Cost ~ Age, labels = row.names(mydata), pos = 1))
+  lines(Age, Pred, type='l', col='coral')
+```
+
+```{r, echo=FALSE}
+  reg = lm(Cost ~ poly(Age, 8), data=subset(mydata, Age < 70))
+  Pred = predict(reg, mydata)
+  RMSE = format(round(rmse(reg$residuals)), big.mark=",")
+  MAE  = format(round(mae(reg$residuals)), big.mark=",")
+  test_error = format(round(abs(Cost[12] - Pred[12])), big.mark=",")
+  plot(Age, Cost, main = paste("Model", 4, "\nTraining Error:   RMSE ", 
+                               RMSE, "  MAE ", MAE, "\n Test Error: ", test_error), 
+       cex.main=0.97)
+  with(mydata, text(Cost ~ Age, labels = row.names(mydata), pos = 1))
+  lines(Age, Pred, type='l', col='dark green')
+```
+
+
+**> Knowledge Check 16.**
+The following code computes and plots the 4 models above for any value of the seed.
+You change the value of the seed by changing the number 4 in this line of code
+```{r, eval=FALSE}
+for(i in 4)
+```
+to any other integer-valued number.
+
+```{r}
+fn = function(i){set.seed(i)}
+
+for(i in 4){
+  fn(i)
+  Cost = 100*Age + Age^2 + round(rnorm(length(Age), mean = 0, sd = 4000))
+  Cost[Cost < 0] = 0
+  mydata = data.frame(Age, Cost)
+  attr(mydata, "row.names") = c("Amy","Ben","Carl","Dan","Ed", "Fran", 
+                                "George", "Helen", "Iris", "Jen", "Kim", "Lucy")
+
+  par(mfrow=c(2,2), oma=c(0,0,2,0))
+
+  reg = lm(Cost ~ poly(Age, 1), data=subset(mydata, Age < 70))
+  Pred = predict(reg, mydata)
+  RMSE = format(round(rmse(reg$residuals)), big.mark=",")
+  MAE  = format(round(mae(reg$residuals)), big.mark=",")
+  test_error = format(round(abs(Cost[12] - Pred[12])), big.mark=",")
+  plot(Age, Cost, main = paste("Model", 1, "\nTraining Error:   RMSE ", 
+                               RMSE, "  MAE ", MAE, "\n Test Error: ", test_error), 
+       cex.main=0.97)
+  with(mydata, text(Cost ~ Age, labels = row.names(mydata), pos = 1))
+  lines(Age, Pred, type='l', col='blue')
+
+  reg = lm(Cost ~ poly(Age, 2), data=subset(mydata, Age < 70))
+  Pred = predict(reg, mydata)
+  RMSE = format(round(rmse(reg$residuals)), big.mark=",")
+  MAE  = format(round(mae(reg$residuals)), big.mark=",")
+  test_error = format(round(abs(Cost[12] - Pred[12])), big.mark=",")
+  plot(Age, Cost, main = paste("Model", 2, "\nTraining Error:   RMSE ", 
+                               RMSE, "  MAE ", MAE, "\n Test Error: ", test_error), 
+       cex.main=0.97)
+  with(mydata, text(Cost ~ Age, labels = row.names(mydata), pos = 1))
+  lines(Age, Pred, type='l', col='red')
+
+  reg = lm(Cost ~ poly(Age, 4), data=subset(mydata, Age < 70))
+  Pred = predict(reg, mydata)
+  RMSE = format(round(rmse(reg$residuals)), big.mark=",")
+  MAE  = format(round(mae(reg$residuals)), big.mark=",")
+  test_error = format(round(abs(Cost[12] - Pred[12])), big.mark=",")
+  plot(Age, Cost, main = paste("Model", 3, "\nTraining Error:   RMSE ", 
+                               RMSE, "  MAE ", MAE, "\n Test Error: ", test_error), 
+       cex.main=0.97)
+  with(mydata, text(Cost ~ Age, labels = row.names(mydata), pos = 1))
+  lines(Age, Pred, type='l', col='coral')
+
+  reg = lm(Cost ~ poly(Age, 8), data=subset(mydata, Age < 70))
+  Pred = predict(reg, mydata)
+  RMSE = format(round(rmse(reg$residuals)), big.mark=",")
+  MAE  = format(round(mae(reg$residuals)), big.mark=",")
+  test_error = format(round(abs(Cost[12] - Pred[12])), big.mark=",")
+  plot(Age, Cost, main = paste("Model", 4, "\nTraining Error:   RMSE ", 
+                               RMSE, "  MAE ", MAE, "\n Test Error: ", test_error), 
+       cex.main=0.97)
+  with(mydata, text(Cost ~ Age, labels = row.names(mydata), pos = 1))
+  lines(Age, Pred, type='l', col='dark green')
+
+  title(paste("Seed Value =", i), outer=TRUE)
+}
+```
+
+1. Change the seed to every value from 1 through 10.
+
+2. Run only the R code in this file using the keyboard shortcut	Ctrl+Shift+S / Command+Shift+S. The plot window in RStudio will show you the results for the 4 models side by side.
+
+4. For each value of the seed, record which model achieves the smallest training error as measured by the RMSE, which model achieves the smallest training error as measured by the MAE, and which model achieves the smallest test error. Record your results in the following table by putting the seed value in the corresponding cell.
+
+For instance, when the seed value is 5, Model 4 minimizes both kinds of training error and Model 1 achieves the smallest test error.
+
+Performance Metric | Model 1 | Model 2 | Model 3 | Model 4
+--- | ---: | ---: | ---: | ---:
+Training Error (RMSE) | | | | 5
+Training Error (MAE) | | | | 5
+Test Error | 5 | | |
+
+*Answer:*
+
+Performance Metric | Model 1 | Model 2 | Model 3 | Model 4
+--- | ---: | ---: | ---: | ---:
+Training Error (RMSE) | | | | 1,2,3,4,5,6,7,8,9,10
+Training Error (MAE) | | | | 1,2,3,4,5,6,7,8,9,10
+Test Error | 1,4,5,6,9 | 2,7,10 | 3,8 |
+
+5. For each performance metric (Training Error (RMSE), Training Error (MAE), Test Error), count how often each model was the top performer.
+
+Performance Metric | Model 1 | Model 2 | Model 3 | Model 4
+--- | ---: | ---: | ---: | ---:
+Training Error (RMSE) | | | | 
+Training Error (MAE) | | | |
+Test Error | | | |
+
+*Answer:*
+
+Performance Metric | Model 1 | Model 2 | Model 3 | Model 4
+--- | ---: | ---: | ---: | ---:
+Training Error (RMSE) | 0 | 0 | 0 | 10
+Training Error (MAE) | 0 | 0 | 0 | 10
+Test Error | 5| 3| 2|
+
+6. Which model would you choose to predict cost based on age?
+
+*Answer:*
+
+You would choose Model 1 because it achieves the lowest test error most often, *even though Model 2 matches the structural form of the true data-generating process* (both Model 2 and the true model are quadratic functions of `Age`).
