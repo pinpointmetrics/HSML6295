@@ -1,1 +1,1 @@
-# This repository contains all the software practice notebooks for HSML 6295.
+# This repository contains the software practice notebooks for HSML 6295.
